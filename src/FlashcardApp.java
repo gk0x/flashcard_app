@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
-public class FlashcardApp extends JFrame implements ActionListener, WindowListener {
+public class FlashcardApp extends JFrame implements ActionListener {
     private JButton addButton, deleteButton, browseButton, saveButton;
     private JTextArea textArea;
     private JFileChooser chooseFile;
@@ -14,52 +14,11 @@ public class FlashcardApp extends JFrame implements ActionListener, WindowListen
 
     //implementacja metod WindowListener(konieczne zaimplementowanie wszystkich metod). Po zamknieciu aplikacji dane
 //będą automatycznie zapisywane
-    @Override
-    public void windowOpened(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowClosing(WindowEvent e) {
-        try {
-            FileWriter writer = new FileWriter("textarea.txt");
-            writer.write(textArea.getText());
-            writer.close();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-    }
-
-    @Override
-    public void windowClosed(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowIconified(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowDeiconified(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowActivated(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowDeactivated(WindowEvent e) {
-
-    }
 
     public FlashcardApp() throws HeadlessException {
         super("FlashcardApp");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        addWindowListener(this);
+
 
 
         addButton = new JButton("Dodaj plik");
@@ -77,22 +36,17 @@ public class FlashcardApp extends JFrame implements ActionListener, WindowListen
         panel.add(browseButton);
         panel.add(saveButton);
 
-        //tworzenie textArea i pobieranie zapisanych danych z textarea.txt
+        //tworzenie textArea
         textArea = new JTextArea(20, 40);
         JScrollPane scrollPane = new JScrollPane(textArea);
-        //pobieranie danych z textarea.txt
-        try {
-            FileReader fileReader = new FileReader("textarea.txt");
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                textArea.append(line + "\n");
+        setTextArea(textArea);
+        // Dodajemy obiekt nasłuchujący zdarzeń MouseListener do JTextArea:
+        textArea.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
             }
-            fileReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        sort(textArea);
+        });
 
 
         add(panel, BorderLayout.NORTH);
@@ -119,8 +73,7 @@ public class FlashcardApp extends JFrame implements ActionListener, WindowListen
                 } catch (IOException exception) {
                     exception.printStackTrace();
                 }
-                textArea.append(selectedFile.getName() + "\n");
-            }
+            } setTextArea(textArea);
         } else if (e.getSource() == browseButton) {
             chooseFile = new JFileChooser("C:/PROGRAMOWANIE/JAVA/java_flashcards/src/resources");
             int result = chooseFile.showOpenDialog(this);
@@ -133,26 +86,41 @@ public class FlashcardApp extends JFrame implements ActionListener, WindowListen
                     exception.printStackTrace();
                 }
             }
-        } else if (e.getSource() == saveButton) {
-            try {
-                FileWriter fileWriter = new FileWriter("textarea.txt");
-                fileWriter.write(textArea.getText());
-                fileWriter.close();
-
-            } catch (IOException exception) {
-                exception.printStackTrace();
+        } else if (e.getSource()==deleteButton) {
+            // Tworzenie okna dialogowego z pytaniem o numer pliku
+            String input = JOptionPane.showInputDialog("Podaj numer pliku który chcesz usunąć");
+            String fileNumber = input;
+            //usuwanie pliku o wybranym numerze
+            File[]files = new File("src/resources/").listFiles();
+            
+            for (int i = 0; i<=files.length; i++){
+                if ((i+1)==Integer.parseInt(fileNumber)){
+                    files[i].delete();
+                    JOptionPane.showMessageDialog(null,"Plik o numerze " +fileNumber + " został usunięty");
+                    setTextArea(textArea);
+                    break;
+                } else if ((i+1)!=Integer.parseInt(fileNumber)) { //continue
+                } else if ((i+1)>Integer.parseInt(fileNumber)||(i+1)<Integer.parseInt(fileNumber)) {
+                    JOptionPane.showMessageDialog(null,"nieprawidłowy numer pliku");
+            }else JOptionPane.showMessageDialog(null,"nieprawidłowy numer pliku");
             }
         }
     }
-    public void sort(JTextArea textArea){
-        String[]lines = textArea.getText().split("\\n");
-        Arrays.sort(lines);
-        StringBuilder sb = new StringBuilder();
-        for (int i=0;i<lines.length;i++){
-            sb.append((i+1)+"."+lines[i]+"\n");
+
+    //pobieranie zapisanych danych z resources
+    public void setTextArea(JTextArea textArea) {
+        File folder = new File("src/resources/");
+        File[] files = folder.listFiles();
+        if (files == null) {
+            textArea.setText("Folder pusty");
+        } else {
+            Arrays.sort(files);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < files.length; i++) {
+                sb.append(i + 1).append(".").append(files[i].getName()).append("\n");
+            }
+            textArea.setText(sb.toString());
         }
-        textArea.setText(sb.toString());
     }
 }
-
 
