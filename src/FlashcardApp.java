@@ -39,7 +39,7 @@ public class FlashcardApp extends JFrame implements ActionListener {
         //tworzenie textArea
         textArea = new JTextArea(20, 40);
         JScrollPane scrollPane = new JScrollPane(textArea);
-        setTextArea(textArea);
+        Methods.setTextArea(textArea);
         // Dodajemy obiekt nasłuchujący zdarzeń MouseListener do JTextArea:
         textArea.addMouseListener(new MouseAdapter() {
             @Override
@@ -73,7 +73,8 @@ public class FlashcardApp extends JFrame implements ActionListener {
                 } catch (IOException exception) {
                     exception.printStackTrace();
                 }
-            } setTextArea(textArea);
+            }
+            Methods.setTextArea(textArea);
         } else if (e.getSource() == browseButton) {
             chooseFile = new JFileChooser("C:/PROGRAMOWANIE/JAVA/java_flashcards/src/resources");
             int result = chooseFile.showOpenDialog(this);
@@ -86,41 +87,32 @@ public class FlashcardApp extends JFrame implements ActionListener {
                     exception.printStackTrace();
                 }
             }
-        } else if (e.getSource()==deleteButton) {
+        } else if (e.getSource() == deleteButton) {
             // Tworzenie okna dialogowego z pytaniem o numer pliku
             String input = JOptionPane.showInputDialog("Podaj numer pliku który chcesz usunąć");
             String fileNumber = input;
             //usuwanie pliku o wybranym numerze
-            File[]files = new File("src/resources/").listFiles();
-            
-            for (int i = 0; i<=files.length; i++){
-                if ((i+1)==Integer.parseInt(fileNumber)){
-                    files[i].delete();
-                    JOptionPane.showMessageDialog(null,"Plik o numerze " +fileNumber + " został usunięty");
-                    setTextArea(textArea);
-                    break;
-                } else if ((i+1)!=Integer.parseInt(fileNumber)) { //continue
-                } else if ((i+1)>Integer.parseInt(fileNumber)||(i+1)<Integer.parseInt(fileNumber)) {
-                    JOptionPane.showMessageDialog(null,"nieprawidłowy numer pliku");
-            }else JOptionPane.showMessageDialog(null,"nieprawidłowy numer pliku");
+            File[] files = new File("src/resources/").listFiles();
+            boolean isNumber;
+            if (!Methods.isInt(fileNumber)) {
+                JOptionPane.showMessageDialog(null, "Podaj liczbę!");
+            } else {
+                if ((Integer.parseInt(fileNumber) > files.length) || (Integer.parseInt(fileNumber) < 1)) {
+                    JOptionPane.showMessageDialog(null, "Nie ma takiego numeru!");
+                } else {
+                    for (int i = 0; i <= files.length; i++) {
+                        if ((i + 1) == Integer.parseInt(fileNumber)) {
+                            files[i].delete();
+                            JOptionPane.showMessageDialog(null, "Plik o numerze " + fileNumber + " został usunięty");
+                            Methods.setTextArea(textArea);
+                            break;
+                        } else if ((i + 1) != Integer.parseInt(fileNumber)) { //continue
+                        } else JOptionPane.showMessageDialog(null, "nieprawidłowy numer pliku");
+                    }
+                }
             }
         }
     }
 
-    //pobieranie zapisanych danych z resources
-    public void setTextArea(JTextArea textArea) {
-        File folder = new File("src/resources/");
-        File[] files = folder.listFiles();
-        if (files == null) {
-            textArea.setText("Folder pusty");
-        } else {
-            Arrays.sort(files);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < files.length; i++) {
-                sb.append(i + 1).append(".").append(files[i].getName()).append("\n");
-            }
-            textArea.setText(sb.toString());
-        }
-    }
 }
 
